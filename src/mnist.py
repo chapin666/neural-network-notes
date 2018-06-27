@@ -46,3 +46,26 @@ train_labels = labels[VALIDATION_SIZE:]
 
 batch_size = 100
 n_batch = int(len(train_images)/batch_size)
+
+weights = tf.Variable(tf.zeros([784, 10]))
+biases = tf.Variable(tf.zeros([10]))
+result = tf.matmul(x, weights) + biases
+prediction = tf.nn.softmax(result)
+
+loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(labels = y, logits=prediction))
+train_step = tf.train.GradientDescentOptimizer(0.1).minimize(loss)
+
+init = tf.global_variables_initializer()
+
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(prediction, 1))
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
+with tf.Session() as sess:
+    sess.run(init)
+    for epoch in range(50):
+        for batch in range(n_batch):
+            batch_x = train_images[batch*batch_size:(batch+1)*batch_size]
+            batch_y = train_labels[batch*batch_size:(batch+1)*batch_size]
+            sess.run(train_step, feed_dict = {x: batch_x, y: batch_y})
+        accuracy_n = sess.run(accuracy, feed_dict={x: validation_images, y: validation_labels})
+        print("第" + str(epoch) + "轮，准确度为: " + str(accuracy_n)) 
